@@ -281,7 +281,7 @@ class WebhookHandler(webapp2.RequestHandler):
 				if curr_game == None:
 					if text == '/newgame' or text == "/newgame@theresistancegamebot":
 						if curr_player == None:
-							new_game = Game(key_name = str(chat_id), chat_title = chat_title, game_time = date)    
+							new_game = Game(id = str(chat_id), chat_title = chat_title, game_time = date)    
 							new_game.put()
 							utils.put_new_player(chat_id, fr_user_id, fr_user_name)
 							line = fr_user_name + ' has started a game!'
