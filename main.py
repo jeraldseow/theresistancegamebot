@@ -416,7 +416,7 @@ class WebhookHandler(webapp2.RequestHandler):
 								if getEnabled(player.get_id()) == False:
 									no_ready_list.append(player)
 
-							if num_players < 1:
+							if num_players < 5:
 								reply ('We need more players before we can start! Go get more friends to join the game!')
 								announce("We now have " + str(num_players) + " players, we need at least 5 players to start the game!")
 
