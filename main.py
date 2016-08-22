@@ -240,7 +240,7 @@ class WebhookHandler(webapp2.RequestHandler):
 			return 
 
 #=====================================================
-		if utils.get_curr_game(chat_id) != None:
+		if utils.get_curr_game(chat_id):
 			curr_game = utils.get_curr_game(chat_id)
 
 			if curr_game:
@@ -264,8 +264,6 @@ class WebhookHandler(webapp2.RequestHandler):
 					memcache.delete(str(chat_id))
 					announce("End sequence interrupted, let the fun continue!")
 
-			elif curr_game != None and curr_game.num_player == 0:
-				curr_game.key.delete()
 			elif date > curr_game.game_time + 172800:
 				announce("This game has lasted way longer than it should have. Shutting down this instance of the game.")
 				for player in utils.get_curr_player_list(chat_id):
@@ -312,7 +310,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						if curr_player == None:
 							new_game = Game(id = str(chat_id), chat_title = chat_title, game_time = date)    
 							new_game.put()
-							utils.put_new_player(chat_id, fr_user_id, fr_user_name)
+							curr_game = utils.put_new_player(chat_id, fr_user_id, fr_user_name)
 							line = fr_user_name + ' has started a game!'
 							reply(line)
 							announce("Please open a private conversation with me (by clicking on this -> @theresistancegamebot) and click start so that you can join in the fun! (And also so you won't mess up the game) \n \nType /startgame at any point after we have sufficient players to start the game (Min 5 players, Max 10) \n \nIt's time to type /join to join in on the fun if you have yet to do so! The game will self destruct in 2 minutes if there are insufficient players!")
@@ -334,7 +332,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						num_players = curr_game.num_player
 						if curr_game.state == 'player_addition':
 							if num_players < 10:
-								utils.put_new_player(chat_id, fr_user_id, fr_user_name)
+								curr_game = utils.put_new_player(chat_id, fr_user_id, fr_user_name)
 								existing_player = utils.get_player(fr_user_id)
 								line = fr_user_name + ' has joined the game! 1 minute countdown has been reset!'
 								curr_game.game_time = date
@@ -417,9 +415,16 @@ class WebhookHandler(webapp2.RequestHandler):
 					elif curr_game.state == 'player_addition':
 						if text == '/leave' or text == "/leave@theresistancegamebot":
 							existing_player = utils.get_player(fr_user_id)
-							announce(existing_player.name + " has left the game!")
-							curr_game = utils.remove_player(chat_id, fr_user_id)
-							announce(str(curr_game.num_player) + " players, 10 maximum")
+							if existing_player:
+								curr_game = utils.remove_player(chat_id, fr_user_id)
+								announce(existing_player.name + " has left the game!")
+								announce(str(curr_game.num_player) + " players, 10 maximum")
+								if curr_game.num_player == 0:
+									curr_game.key.delete()
+									announce("Insufficient players, game terminating now.")
+							else:
+								reply("You're not even in the game!")
+							return
 
 						elif text == '/startgame' or text == "/startgame@theresistancegamebot":
 							curr_game = utils.get_curr_game(chat_id)

@@ -79,18 +79,15 @@ def put_new_player (chat_id, fr_user_id, fr_user_name):
 	if existing_player == None:
 		new_player = Player(parent_chat_id = chat_id, id = str(fr_user_id), name = fr_user_name)
 		new_player.put()
-		curr_game.num_player += 1
-		curr_game.put()
-	return 
+		curr_game = increment_game_num_player(chat_id)
+	return curr_game
 
-@ndb.transactional
 def remove_player(chat_id, fr_user_id):
 	curr_game = get_curr_game(chat_id)
 	existing_player = get_player(fr_user_id)
 	if existing_player:
 		existing_player.key.delete()
-		curr_game.num_player -= 1
-		curr_game.put()
+		curr_game = decrement_game_num_player(chat_id)
 	return curr_game
 
 def assign_role (chat_id):
@@ -334,12 +331,25 @@ def increment_game_succ(chat_id):
 	return curr_game
 
 @ndb.transactional
-def increment_game_fail(self):
+def increment_game_fail(chat_id):
 	curr_game = get_curr_game(chat_id)
 	curr_game.fail_count += 1
 	curr_game.put()
 	return curr_game
 
+@ndb.transactional
+def increment_game_num_player(chat_id):
+	curr_game = get_curr_game(chat_id)
+	curr_game.num_player += 1
+	curr_game.put()
+	return curr_game
+
+@ndb.transactional
+def decrement_game_num_player(chat_id):
+	curr_game = get_curr_game(chat_id)
+	curr_game.num_player -= 1
+	curr_game.put()
+	return curr_game
 
 
 
