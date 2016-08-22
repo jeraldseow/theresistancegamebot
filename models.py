@@ -1,7 +1,6 @@
 from google.appengine.ext import ndb
 
 class Game(ndb.Model):
-    chat_id = ndb.IntegerProperty(required = True)
     chat_title = ndb.StringProperty(required = True)
     game_time = ndb.IntegerProperty(required = True)
     mission_num = ndb.IntegerProperty(default = 1) 
@@ -25,6 +24,9 @@ class Game(ndb.Model):
     mission_fail_count = ndb.IntegerProperty(default = 0)
 
     winner = ndb.StringProperty(choices = ['Spies','Resistance'])
+
+    def get_id(self):
+        return self.key().name()
 
    
 class Player(ndb.Model):

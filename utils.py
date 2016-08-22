@@ -10,7 +10,7 @@ missionDict = {1:(0,1,1,1,1,1), 2:(0,2,2,2,2,2), 5:(0,2,3,2,3,3), 6:(0,2,3,3,3,4
 
 def get_curr_game(chat_id):
 	""" return current game (entity) corresponding to chat_id"""
-	curr_game = Game.query(Game.chat_id == chat_id).get()
+	curr_game = ndb.Key('Game', chat_id).get()
 	return curr_game
 
 def get_curr_player_list(chat_id):
