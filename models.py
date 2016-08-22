@@ -26,12 +26,31 @@ class Game(ndb.Model):
     winner = ndb.StringProperty(choices = ['Spies','Resistance'])
 
     def get_id(self):
-        return self.key().name()
+        return int(self.key.id())
+
+    @ndb.transactional
+    def increment_yes(self):
+        self.yes_count += 1
+        self.put()
+
+    @ndb.transactional
+    def increment_no(self):
+        self.no_count += 1
+        self.put()
+
+    @ndb.transactional
+    def increment_succ(self):
+        self.succ_count += 1
+        self.put()
+
+    @ndb.transactional
+    def increment_fail(self):
+        self.fail_count += 1
+        self.put()
 
    
 class Player(ndb.Model):
-    role = ndb.StringProperty (
-        choices = ['spy','resistance']) 
+    role = ndb.StringProperty (choices = ['spy','resistance'], default = 'resistance') 
     name = ndb.StringProperty()
     is_leader = ndb.BooleanProperty(default = False)
     on_mission = ndb.BooleanProperty(default = False)
@@ -39,5 +58,5 @@ class Player(ndb.Model):
     can_vote = ndb.BooleanProperty(default = False)
 
     def get_id(self):
-        return self.key().name()
+        return int(self.key.id())
 

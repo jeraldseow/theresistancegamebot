@@ -1,6 +1,6 @@
 from google.appengine.ext import ndb
 from models import Game, Player
-from random import randint
+import random
 import logging
 
 # ==============GLOBAL DICs==================
@@ -8,13 +8,13 @@ identityDictRS = {1:(1,0), 2:(1,1), 5:(3,2), 6:(4,2), 7:(4,3), 8:(5,3), 9:(6,3),
 missionDict = {1:(0,1,1,1,1,1), 2:(0,2,2,2,2,2), 5:(0,2,3,2,3,3), 6:(0,2,3,3,3,4), 7:(0,2,3,3,4,4), 8:(0,3,4,4,5,5), 9:(0,3,4,4,5,5), 10:(0,3,3,4,4,5)}
 
 
-@ndb.transactional
+#@ndb.transactional
 def get_curr_game(chat_id):
 	""" return current game (entity) corresponding to chat_id"""
 	curr_game = ndb.Key('Game', str(chat_id)).get()
 	return curr_game
 
-@ndb.transactional
+#@ndb.transactional
 def get_player(chat_id):
 	player = ndb.Key('Player', str(chat_id)).get()
 	return player
@@ -93,24 +93,15 @@ def remove_player(fr_user_id):
 		curr_game.put()
 	return
 
-
 def assign_role (chat_id):
 	"""after player_addition phase, roles/leaders are assigned"""
 	curr_game = get_curr_game(chat_id)
-	num_player = curr_game.num_player
-	numSpies = identityDictRS[num_player][1]
-	numResistance = identityDictRS[num_player][0]
+	numSpies = identityDictRS[curr_game.num_player][1]
 	player_list = get_curr_player_list(chat_id)
-	spy_count = 0
-	for player in player_list:
-		indicator = randint(0,1)
-		if indicator == 1 and spy_count < numSpies:
-			player.role = 'spy'
-			player.put()
-			spy_count += 1
-		else:
-			player.role = 'resistance' 
-			player.put()
+	spies_list = random.sample(player_list, numSpies)
+	for spy in spies_list:
+		spy.role = 'spy'
+		spy.put()
 	return 
 
 def get_game_state(chat_id):
