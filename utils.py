@@ -83,13 +83,15 @@ def put_new_player (chat_id, fr_user_id, fr_user_name):
 		curr_game.put()
 	return 
 
-def remove_player(fr_user_id):
+@ndb.transactional
+def remove_player(chat_id, fr_user_id):
+	curr_game = get_curr_game(chat_id)
 	existing_player = get_player(fr_user_id)
-	if existing_player != None:
+	if existing_player:
 		existing_player.key.delete()
 		curr_game.num_player -= 1
 		curr_game.put()
-	return
+	return curr_game
 
 def assign_role (chat_id):
 	"""after player_addition phase, roles/leaders are assigned"""

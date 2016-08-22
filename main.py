@@ -11,7 +11,7 @@ import urllib2
 #import multipart
 
 # standard app engine imports
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, memcache
 from google.appengine.ext import ndb
 import webapp2
 from models import Game, Player
@@ -243,7 +243,28 @@ class WebhookHandler(webapp2.RequestHandler):
 		if utils.get_curr_game(chat_id) != None:
 			curr_game = utils.get_curr_game(chat_id)
 
-			if curr_game != None and curr_game.num_player == 0:
+			if curr_game:
+				if text == "/end" or text == "/end@theresistancegamebot":
+					memcache.set(str(chat_id), value = fr_user_id, time = 172800)
+					reply("Are you sure you really want to end this game? If you do, make sure the next message sent in this group is /really_end and that it is sent by " + fr_user_name + ". If I receive any other message by any other player, this process will be terminated.")
+					return
+				elif text == "/really_end" or text == "/really_end@theresistancegamebot":
+					if memcache.get(str(chat_id)) and memcache.get(str(chat_id)) == fr_user_id:
+						for player in utils.get_curr_player_list(chat_id):
+							player.key.delete()
+						reply ("Thanks for playing, see you next time!")
+						utils.get_curr_game(chat_id).key.delete()
+						memcache.delete(str(chat_id))
+					else:
+						reply("Don't try Sabo la you!")
+						memcache.delete(str(chat_id))
+						announce("End sequence interrupted, let the fun continue!")
+					return
+				elif memcache.get(str(chat_id)):
+					memcache.delete(str(chat_id))
+					announce("End sequence interrupted, let the fun continue!")
+
+			elif curr_game != None and curr_game.num_player == 0:
 				curr_game.key.delete()
 			elif date > curr_game.game_time + 172800:
 				announce("This game has lasted way longer than it should have. Shutting down this instance of the game.")
@@ -337,14 +358,8 @@ class WebhookHandler(webapp2.RequestHandler):
 					reply("Get back to " + utils.get_curr_game(curr_player.parent_chat_id).chat_title + " where your game is ongoing! You don't belong here!")
 
 				elif curr_player.parent_chat_id == chat_id:
-					if text == "/end" or text == "/end@theresistancegamebot":
-						existing_game = utils.get_curr_game(chat_id)
-						for player in utils.get_curr_player_list(chat_id):
-							player.key.delete()
-						reply ("Thanks for playing, see you next time!")
-						utils.get_curr_game(chat_id).key.delete()
 
-					elif text == "/players" or text == "/players@theresistancegamebot":
+					if text == "/players" or text == "/players@theresistancegamebot":
 						existing_game = utils.get_curr_game(chat_id)
 						player_list = utils.get_curr_player_list(chat_id)
 						player_namelist = 'Current players: '
@@ -403,7 +418,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						if text == '/leave' or text == "/leave@theresistancegamebot":
 							existing_player = utils.get_player(fr_user_id)
 							announce(existing_player.name + " has left the game!")
-							utils.remove_player(fr_user_id)
+							curr_game = utils.remove_player(chat_id, fr_user_id)
 							announce(str(curr_game.num_player) + " players, 10 maximum")
 
 						elif text == '/startgame' or text == "/startgame@theresistancegamebot":
