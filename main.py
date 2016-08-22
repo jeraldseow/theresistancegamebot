@@ -198,7 +198,7 @@ class WebhookHandler(webapp2.RequestHandler):
 			logging.info(resp)
 
 		def keyboard_nomination(user_id, msg=None):
-			player = Player.query(Player.user_id == user_id).get()
+			player = utils.get_player(user_id)
 			buttons = utils.get_curr_player_slashnamelist(player.parent_chat_id)
 			keyboard = json.dumps({ 'keyboard':buttons,
 				'one_time_keyboard': True,
@@ -275,7 +275,7 @@ class WebhookHandler(webapp2.RequestHandler):
 				announce(str(curr_game.num_player))
 
 			elif chat_type == 'group' or chat_type == 'supergroup':
-				curr_player = Player.query(Player.user_id == fr_user_id).get()
+				curr_player = utils.get_player(fr_user_id)
 				curr_game = utils.get_curr_game(chat_id)
 
 				if curr_game == None:
@@ -302,7 +302,7 @@ class WebhookHandler(webapp2.RequestHandler):
 				elif curr_player == None and (text == "/join" or text == "/join@theresistancegamebot"):
 					if text == '/join' or text == "/join@theresistancegamebot":
 						curr_game_key = curr_game.key
-						existing_player = Player.query(ancestor = curr_game_key).filter(Player.user_id == fr_user_id).get()
+						existing_player = utils.get_player(fr_user_id)
 						if existing_player:
 							reply("You're already in this game!")
 						else:
@@ -312,9 +312,9 @@ class WebhookHandler(webapp2.RequestHandler):
 								line = fr_user_name + ' has joined the game! 1 minute countdown has been reset!'
 								curr_game.game_time = date
 								curr_game.put()
-								this_player = Player.query(ancestor = curr_game_key).filter(Player.user_id == fr_user_id).get()	
+								this_player = utils.get_player(fr_user_id)	
 								reply(line + " " + str(curr_game.num_player) + " players, 10 maximum")
-								if getEnabled(this_player.user_id) == False:
+								if getEnabled(this_player.get_id()) == False:
 									reply("Hi there " + this_player.name + ", I need you to click on me at -> @theresistancegamebot and press /start to activate me before I can tell you your role!")
 								if curr_game.num_player == 10:
 									announce("You already have 10 players! Somebody start the game using /startgame and let's get this game going!") 
@@ -391,9 +391,9 @@ class WebhookHandler(webapp2.RequestHandler):
 
 					elif curr_game.state == 'player_addition':
 						if text == '/leave' or text == "/leave@theresistancegamebot":
-							existing_player = Player.query(ancestor = curr_game.key).filter(Player.user_id == fr_user_id).get()
+							existing_player = utils.get_player(fr_user_id)
 							announce(existing_player.name + " has left the game!")
-							utils.remove_player(chat_id, existing_player.user_id)
+							utils.remove_player(fr_user_id)
 							announce(str(curr_game.num_player) + " players, 10 maximum")
 
 						elif text == '/startgame' or text == "/startgame@theresistancegamebot":
@@ -403,7 +403,7 @@ class WebhookHandler(webapp2.RequestHandler):
 							players = utils.get_curr_player_list(chat_id)
 							no_ready_list = []
 							for player in players:
-								if getEnabled(player.user_id) == False:
+								if getEnabled(player.get_id()) == False:
 									no_ready_list.append(player)
 
 							if num_players < 5:
@@ -428,15 +428,15 @@ class WebhookHandler(webapp2.RequestHandler):
 									line += ", "
 								line = line[:-2]
 								for resistance in utils.get_resistance_list(chat_id):
-									reply_to_user(resistance.user_id, u"You are a member of the Resistance! (a.k.a the good guys \U0001F607)")		
+									reply_to_user(resistance.get_id(), u"You are a member of the Resistance! (a.k.a the good guys \U0001F607)")		
 								for spy in utils.get_spy_list(chat_id):
-									reply_to_user(spy.user_id, u"You are: a Spy. \U0001F608 Go and wreck havoc with your friends " + line)
-								curr_leader = Player.query(ancestor = curr_game.key).fetch(1)[0]
+									reply_to_user(spy.get_id(), u"You are: a Spy. \U0001F608 Go and wreck havoc with your friends " + line)
+								curr_leader = Player.query(Player.parent_chat_id == chat_id).fetch(1)[0]
 								curr_leader.is_leader = True
 								curr_leader.put()
 								msg = "The current leader is " + curr_leader.name + ". Please nominate " + str(utils.missionDict[curr_game.num_player][curr_game.mission_num]) + " friends you wish to send on this Mission."
 								announce(msg)
-								keyboard_nomination(curr_leader.user_id, "Send me the names of those you wish to nominate for this Mission.")
+								keyboard_nomination(curr_leader.get_id(), "Send me the names of those you wish to nominate for this Mission.")
 
 						else:
 							announce("Incorrect command, type /join or /startgame instead")
@@ -456,7 +456,7 @@ class WebhookHandler(webapp2.RequestHandler):
 					reply("You are not in the game, wait for the next round to join in the fun!")
 
 			else: 
-				curr_player = Player.query(Player.user_id == fr_user_id).get()
+				curr_player = utils.get_player(fr_user_id)
 				if curr_player != None:
 					curr_game = utils.get_curr_game(curr_player.parent_chat_id)
 
@@ -464,7 +464,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						reply("Now's not the time for you to be talking to me here, get back on the group chat!")
 
 					elif curr_game.state == "selection":
-						member = Player.query(Player.user_id == fr_user_id).get()
+						member = utils.get_player(fr_user_id)
 						curr_game = utils.get_curr_game(member.parent_chat_id)
 						role_dict = utils.get_role_dict(member.parent_chat_id)
 						if member.is_leader == False:
@@ -479,7 +479,7 @@ class WebhookHandler(webapp2.RequestHandler):
 									selected_player = utils.player_selected(member.parent_chat_id, text)
 									if selected_player.on_mission == True:
 										reply("Please choose someone else who has not been nominated yet!")
-										keyboard_nomination(utils.game_leader(curr_game.get_id()).user_id, "Who else would you like to nominate?")
+										keyboard_nomination(utils.game_leader(curr_game.get_id()).get_id(), "Who else would you like to nominate?")
 									else:
 										selected_player.on_mission = True
 										selected_player.put()
@@ -498,14 +498,14 @@ class WebhookHandler(webapp2.RequestHandler):
 											curr_game.state = 'voting'
 											curr_game.put()
 											for player in utils.get_curr_player_list(member.parent_chat_id):
-												keyboard_yes_no(player.user_id,"Please submit a /yes or /no vote if you want these guys on the Mission!")
+												keyboard_yes_no(player.get_id(),"Please submit a /yes or /no vote if you want these guys on the Mission!")
 										else:
-											keyboard_nomination(utils.game_leader(curr_game.get_id()).user_id, "Who else would you like to nominate?")
+											keyboard_nomination(utils.game_leader(curr_game.get_id()).get_id(), "Who else would you like to nominate?")
 							else:
 								reply("I think you must have made a typo? Please spell the player's name accurately or use the custom keyboard to help enter your friends' names accurately.")
 
 					elif curr_game.state == "voting":
-						member = Player.query(Player.user_id == fr_user_id).get()
+						member = utils.get_player(fr_user_id)
 						curr_game = utils.get_curr_game(member.parent_chat_id)
 
 						if text == '/yes' or text == '/no':
@@ -543,9 +543,9 @@ class WebhookHandler(webapp2.RequestHandler):
 									
 									for player in utils.get_mission_entitylist(member.parent_chat_id):
 										if player.role == 'spy':
-											keyboard_s_f(player.user_id, "Please reply /success or /fail to determine the outcome of the Mission!")
+											keyboard_s_f(player.get_id(), "Please reply /success or /fail to determine the outcome of the Mission!")
 										else:
-											keyboard_s(player.user_id, "As a member of the Resistance, you are only allowed to vote /success to the outcome of this Mission.")
+											keyboard_s(player.get_id(), "As a member of the Resistance, you are only allowed to vote /success to the outcome of this Mission.")
 									curr_game.yes_count = 0
 									curr_game.no_count = 0
 									curr_game.put()
@@ -558,7 +558,7 @@ class WebhookHandler(webapp2.RequestHandler):
 									if curr_game.conesequetive_fail_votes_num < 5:
 										new_leader = utils.next_leader(member.parent_chat_id)
 										reply_to_user(member.parent_chat_id, "Insufficient Yes votes to proceed, next leader: " + new_leader.name + ". Please nominate a new set of " + str(utils.missionDict[curr_game.num_player][curr_game.mission_num]) + " friends to go for the Mission!")
-										keyboard_nomination(utils.game_leader(curr_game.get_id()).user_id, "Send me the names of those you wish to nominate here")
+										keyboard_nomination(utils.game_leader(curr_game.get_id()).get_id(), "Send me the names of those you wish to nominate here")
 										utils.all_can_vote(member.parent_chat_id)
 										utils.mission_clear(member.parent_chat_id)
 										if curr_game.numplayer > 6 and curr_game.mission_num == 4:
@@ -590,7 +590,7 @@ class WebhookHandler(webapp2.RequestHandler):
 										reply(u"You crook, why would you want the Mission to fail?! \U0001F31A")
 									else:
 										reply("You're not allowed to sabotage the Mission as the member of the resistance! Send me your vote again!")
-										keyboard_s(curr_player.user_id, "As a member of the Resistance, you are only allowed to vote /success to the outcome of this Mission.")
+										keyboard_s(curr_player.get_id(), "As a member of the Resistance, you are only allowed to vote /success to the outcome of this Mission.")
 							else:
 								reply("You have already cast your vote for this Mission!")
 						else:
@@ -618,7 +618,7 @@ class WebhookHandler(webapp2.RequestHandler):
 									next_leader = utils.next_leader(curr_game.get_id())
 									line = "The leader for the next round is: " + next_leader.name + ". Please nominate a new set of " + str(utils.missionDict[curr_game.num_player][curr_game.mission_num]) +" friends to go for the Mission!"
 									reply_to_user(curr_game.get_id(), line)
-									keyboard_nomination(utils.game_leader(curr_game.get_id()).user_id, "Send me the names of those you wish to nominate here")
+									keyboard_nomination(utils.game_leader(curr_game.get_id()).get_id(), "Send me the names of those you wish to nominate here")
 									if curr_game.numplayer > 6 and curr_game.mission_num == 4:
 										reply_to_user(curr_game.get_id(), "Spies do take note: you require TWO Fail votes for this Mission to fail.")
 							else:
@@ -642,7 +642,7 @@ class WebhookHandler(webapp2.RequestHandler):
 									next_leader = utils.next_leader(curr_game.get_id()) 
 									line = "The leader for the next round is: " + next_leader.name + ". Please nominate a new set of " + str(utils.missionDict[curr_game.num_player][curr_game.mission_num]) +" friends to go for the Mission!"
 									reply_to_user(curr_game.get_id(), line)
-									keyboard_nomination(utils.game_leader(curr_game.get_id()).user_id, "Send me the names of those you wish to nominate here")
+									keyboard_nomination(utils.game_leader(curr_game.get_id()).get_id(), "Send me the names of those you wish to nominate here")
 									if curr_game.numplayer > 6 and curr_game.mission_num == 4:
 										reply_to_user(curr_game.get_id(), "Spies do take note: you require TWO Fail votes for this Mission to fail.")  
 

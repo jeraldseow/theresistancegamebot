@@ -1,17 +1,23 @@
 from google.appengine.ext import ndb
 from models import Game, Player
 from random import randint
+import logging
 
 # ==============GLOBAL DICs==================
 identityDictRS = {1:(1,0), 2:(1,1), 5:(3,2), 6:(4,2), 7:(4,3), 8:(5,3), 9:(6,3), 10:(6,4)}
 missionDict = {1:(0,1,1,1,1,1), 2:(0,2,2,2,2,2), 5:(0,2,3,2,3,3), 6:(0,2,3,3,3,4), 7:(0,2,3,3,4,4), 8:(0,3,4,4,5,5), 9:(0,3,4,4,5,5), 10:(0,3,3,4,4,5)}
 
 
-
+@ndb.transactional
 def get_curr_game(chat_id):
 	""" return current game (entity) corresponding to chat_id"""
 	curr_game = ndb.Key('Game', str(chat_id)).get()
 	return curr_game
+
+@ndb.transactional
+def get_player(chat_id):
+	player = ndb.Key('Player', str(chat_id)).get()
+	return player
 
 def get_curr_player_list(chat_id):
 	""" a list of current players (entity)"""
@@ -31,14 +37,14 @@ def get_curr_player_slashnamelist(chat_id):
 
 def get_spy_namelist(chat_id):
 	spy_namelist = []
-	players = Player.query(ancestor = get_curr_game(chat_id).key).fetch()
+	players = Player.query(Player.parent_chat_id == chat_id).fetch()
 	for player in players:
 		if player.role == 'spy':
 			spy_namelist.append(player.name)
 	return spy_namelist
 def get_spy_list(chat_id):
 	spy_list = []
-	players = Player.query(ancestor = get_curr_game(chat_id).key).fetch()
+	players = Player.query(Player.parent_chat_id == chat_id).fetch()
 	for player in players:
 		if player.role == 'spy':
 			spy_list.append(player)
@@ -46,7 +52,7 @@ def get_spy_list(chat_id):
 
 def get_resistance_list(chat_id):
 	resistance_list = []
-	players = Player.query(ancestor = get_curr_game(chat_id).key).fetch()
+	players = Player.query(Player.parent_chat_id == chat_id).fetch()
 	for player in players:
 		if player.role == 'resistance':
 			resistance_list.append(player)
@@ -71,17 +77,16 @@ def put_new_player (chat_id, fr_user_id, fr_user_name):
 	"""add in this new player and return its key"""
 	"""increment in num_player"""
 	curr_game = get_curr_game(chat_id)
-	existing_player = Player.query(Player.user_id == fr_user_id).get()
+	existing_player = get_player(fr_user_id)
 	if existing_player == None:
-		new_player = Player(parent = curr_game.key, parent_chat_id = chat_id, user_id = fr_user_id, name = fr_user_name)
+		new_player = Player(parent_chat_id = chat_id, id = str(fr_user_id), name = fr_user_name)
 		new_player.put()
 		curr_game.num_player += 1
 		curr_game.put()
 	return 
 
-def remove_player(chat_id, fr_user_id):
-	curr_game = get_curr_game(chat_id)
-	existing_player = Player.query(Player.user_id == fr_user_id).get()
+def remove_player(fr_user_id):
+	existing_player = get_player(fr_user_id)
 	if existing_player != None:
 		existing_player.key.delete()
 		curr_game.num_player -= 1

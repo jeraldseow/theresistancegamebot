@@ -30,7 +30,6 @@ class Game(ndb.Model):
 
    
 class Player(ndb.Model):
-    user_id = ndb.IntegerProperty(required=True)
     role = ndb.StringProperty (
         choices = ['spy','resistance']) 
     name = ndb.StringProperty()
@@ -38,3 +37,7 @@ class Player(ndb.Model):
     on_mission = ndb.BooleanProperty(default = False)
     parent_chat_id = ndb.IntegerProperty(required = True)
     can_vote = ndb.BooleanProperty(default = False)
+
+    def get_id(self):
+        return self.key().name()
+
