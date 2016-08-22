@@ -8,13 +8,11 @@ identityDictRS = {1:(1,0), 2:(1,1), 5:(3,2), 6:(4,2), 7:(4,3), 8:(5,3), 9:(6,3),
 missionDict = {1:(0,1,1,1,1,1), 2:(0,2,2,2,2,2), 5:(0,2,3,2,3,3), 6:(0,2,3,3,3,4), 7:(0,2,3,3,4,4), 8:(0,3,4,4,5,5), 9:(0,3,4,4,5,5), 10:(0,3,3,4,4,5)}
 
 
-#@ndb.transactional
 def get_curr_game(chat_id):
 	""" return current game (entity) corresponding to chat_id"""
 	curr_game = ndb.Key('Game', str(chat_id)).get()
 	return curr_game
 
-#@ndb.transactional
 def get_player(chat_id):
 	player = ndb.Key('Player', str(chat_id)).get()
 	return player
@@ -312,7 +310,33 @@ def end_game_summary(chat_id):
 	text += "Mission 5: " + curr_game.msn5 + "\n \n"
 	return text
 
+@ndb.transactional
+def increment_game_yes(chat_id):
+	curr_game = get_curr_game(chat_id)
+	curr_game.yes_count += 1
+	curr_game.put()
+	return curr_game
 
+@ndb.transactional
+def increment_game_no(chat_id):
+	curr_game = get_curr_game(chat_id)
+	curr_game.no_count += 1
+	curr_game.put()
+	return curr_game
+
+@ndb.transactional
+def increment_game_succ(chat_id):
+	curr_game = get_curr_game(chat_id)
+	curr_game.succ_count += 1
+	curr_game.put()
+	return curr_game
+
+@ndb.transactional
+def increment_game_fail(self):
+	curr_game = get_curr_game(chat_id)
+	curr_game.fail_count += 1
+	curr_game.put()
+	return curr_game
 
 
 

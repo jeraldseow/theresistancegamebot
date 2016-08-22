@@ -245,7 +245,6 @@ class WebhookHandler(webapp2.RequestHandler):
 
 			if curr_game != None and curr_game.num_player == 0:
 				curr_game.key.delete()
-				#announce("woops, there was a game going on that didn't have any players in it. Don't mind me while I just end that game.")
 			elif date > curr_game.game_time + 172800:
 				announce("This game has lasted way longer than it should have. Shutting down this instance of the game.")
 				for player in utils.get_curr_player_list(chat_id):
@@ -312,21 +311,24 @@ class WebhookHandler(webapp2.RequestHandler):
 					if text == '/join' or text == "/join@theresistancegamebot":
 						curr_game_key = curr_game.key
 						num_players = curr_game.num_player
-						if num_players < 10:
-							utils.put_new_player(chat_id, fr_user_id, fr_user_name)
-							existing_player = utils.get_player(fr_user_id)
-							line = fr_user_name + ' has joined the game! 1 minute countdown has been reset!'
-							curr_game.game_time = date
-							curr_game.put() 
-							reply(line + " " + str(curr_game.num_player) + " players, 10 maximum")
-							if getEnabled(existing_player.get_id()) == False:
-								reply("Hi there " + existing_player.name + ", I need you to click on me at -> @theresistancegamebot and press /start to activate me before I can tell you your role!")
-							if curr_game.num_player == 10:
-								announce("You already have 10 players! Somebody start the game using /startgame and let's get this game going!") 
+						if curr_game.state == 'player_addition':
+							if num_players < 10:
+								utils.put_new_player(chat_id, fr_user_id, fr_user_name)
+								existing_player = utils.get_player(fr_user_id)
+								line = fr_user_name + ' has joined the game! 1 minute countdown has been reset!'
+								curr_game.game_time = date
+								curr_game.put() 
+								reply(line + " " + str(curr_game.num_player) + " players, 10 maximum")
+								if getEnabled(existing_player.get_id()) == False:
+									reply("Hi there " + existing_player.name + ", I need you to click on me at -> @theresistancegamebot and press /start to activate me before I can tell you your role!")
+								if curr_game.num_player == 10:
+									announce("You already have 10 players! Somebody start the game using /startgame and let's get this game going!") 
+								else:
+									pass
 							else:
-								pass
+								reply("You already have 10 players! Somebody start the game using /startgame and get this game going!")
 						else:
-							reply("You already have 10 players! Somebody start the game using /startgame and get this game going!")
+							reply("The game has already begun! You're too late! Wait patiently for the next one!")
 
 				elif curr_player == None:
 					reply("You my dear friend are not in a game! Type /join to join the game if it has not yet started!")
@@ -521,11 +523,11 @@ class WebhookHandler(webapp2.RequestHandler):
 								member.can_vote = False
 								member.put()
 								if text == "/yes": 
-									curr_game.increment_yes()
+									curr_game = utils.increment_game_yes(member.parent_chat_id)
 									reply("Ok I've received your vote!")
 									reply_to_user(member.parent_chat_id, member.name + u" has voted YES \U0001F44C")
 								else:
-									curr_game.increment_no()
+									curr_game = utils.increment_game_no(member.parent_chat_id)
 									reply("Ok I've received your vote!")
 									reply_to_user(member.parent_chat_id, member.name + u" has voted NO \U0001F44E")
 							else:
@@ -585,13 +587,13 @@ class WebhookHandler(webapp2.RequestHandler):
 								if text == '/success':
 									curr_player.can_vote = False
 									curr_player.put()
-									curr_game.increment_succ()
+									curr_game = utils.increment_game_succ(curr_player.parent_chat_id)
 									reply(u"Thank you for not sabotaging the Mission \U0001F31D")
 								else:
 									if curr_player.role == 'spy':
 										curr_player.can_vote = False
 										curr_player.put()
-										curr_game.increment_fail()
+										curr_game = utils.increment_game_fail(curr_player.parent_chat_id)
 										reply(u"You crook, why would you want the Mission to fail?! \U0001F31A")
 									else:
 										reply("You're not allowed to sabotage the Mission as the member of the resistance! Send me your vote again!")
