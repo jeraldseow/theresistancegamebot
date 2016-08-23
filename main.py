@@ -246,7 +246,7 @@ class WebhookHandler(webapp2.RequestHandler):
 			if curr_game:
 				if text == "/end" or text == "/end@theresistancegamebot":
 					memcache.set(str(chat_id), value = fr_user_id, time = 30)
-					reply("Are you sure you really want to end this game? If you do, make sure the next message sent in this group is /really_end and that it is sent by " + fr_user_name + ". If I receive any other message by any other player, this process will be terminated.")
+					reply("Are you sure you really want to end this game? If you do, make sure the next message sent in this group is /really_end within the next 30 seconds and that it is sent by " + fr_user_name + ". If I receive any other message by any other player, this process will be terminated.")
 					return
 				elif text == "/really_end" or text == "/really_end@theresistancegamebot":
 					if memcache.get(str(chat_id)) and memcache.get(str(chat_id)) == fr_user_id:
@@ -407,7 +407,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						reply(utils.game_summary(chat_id))
 
 					elif text == "/help" or text == "/help@theresistancegamebot":
-						reply("Here is a list of commands for the game: \n/newgame - Starts a new game! \n/players - Shows you a list of who is in the current game \n/leave - Allows you to leave the game if it has yet to start \n/startgame - Starts the game if there are sufficient players \n/yes - a Yes vote (to be sent privately to me in the Team Selection Phase) \n/no - a No vote (to be sent privately to me in the Team Selection Phase) \n/success - a Success vote (to be sent privately to me in the Mission Phase) \n/fail - a Faile vote (to be sent privately to me in the Mission Phase) \n/whoarewewaitingfor - Informs you who has yet to vote on the Team selection or on the ourtcome of the Mission \n/missionmembers - Informs you on who has been chosen to go on the Mission \n/summary - Gives you a summary of what the outcome of the previous missions have beeen thus far \n/end - **USE WITH CAUTION** can be entered by any participating player in the game to end the game immediately without an outcome.")
+						reply("Here is a list of commands for the game: \n/newgame - Starts a new game! \n/players - Shows you a list of who is in the current game \n/leave - Allows you to leave the game if it has yet to start \n/startgame - Starts the game if there are sufficient players \n/yes - a Yes vote (to be sent privately to me in the Team Selection Phase) \n/no - a No vote (to be sent privately to me in the Team Selection Phase) \n/success - a Success vote (to be sent privately to me in the Mission Phase) \n/fail - a Faile vote (to be sent privately to me in the Mission Phase) \n/whoarewewaitingfor - Informs you who has yet to vote on the Team selection or on the ourtcome of the Mission \n/missionmembers - Informs you on who has been chosen to go on the Mission \n/summary - Gives you a summary of what the outcome of the previous missions have beeen thus far \n/end - **USE WITH CAUTION** can be entered by any participating player in the game to end the game without an outcome.")
 
 					elif text == "/rules" or text == "/rules@theresistancegamebot":
 						reply("Welcome to The Resistance, a game that pits the closest of friends against one another in an epic battle of identity discovery and misplacement of trust. \n \

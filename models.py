@@ -5,11 +5,11 @@ class Game(ndb.Model):
 	game_time = ndb.IntegerProperty(required = True)
 	mission_num = ndb.IntegerProperty(default = 1) 
 	conesequetive_fail_votes_num = ndb.IntegerProperty(default = 0) ## 1 to 5; increase when each consequetive selection phase fails
-	msn1 = ndb.StringProperty(choices = ["F", "S", "N"], default = "N")
-	msn2 = ndb.StringProperty(choices = ["F", "S", "N"], default = "N")
-	msn3 = ndb.StringProperty(choices = ["F", "S", "N"], default = "N")
-	msn4 = ndb.StringProperty(choices = ["F", "S", "N"], default = "N")
-	msn5 = ndb.StringProperty(choices = ["F", "S", "N"], default = "N")
+	msn1 = ndb.StringProperty(choices = [u"\U0000274C", u"\U00002705", ""], default = "")
+	msn2 = ndb.StringProperty(choices = [u"\U0000274C", u"\U00002705", ""], default = "")
+	msn3 = ndb.StringProperty(choices = [u"\U0000274C", u"\U00002705", ""], default = "")
+	msn4 = ndb.StringProperty(choices = [u"\U0000274C", u"\U00002705", ""], default = "")
+	msn5 = ndb.StringProperty(choices = [u"\U0000274C", u"\U00002705", ""], default = "")
 	state = ndb.StringProperty(choices = ['player_addition', 'selection','voting','mission'], default = 'player_addition')
 	
 	num_player = ndb.IntegerProperty(default = 0)

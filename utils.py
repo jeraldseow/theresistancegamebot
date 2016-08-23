@@ -254,35 +254,35 @@ def update_mission_summary(chat_id, mission_success):
 	curr_game = get_curr_game(chat_id)
 	if mission_success == True:
 		if curr_game.mission_num == 1:
-			curr_game.msn1 = "S"
+			curr_game.msn1 = u"\U00002705"
 			curr_game.put()
 		elif curr_game.mission_num == 2:
-			curr_game.msn2 = "S"
+			curr_game.msn2 = u"\U00002705"
 			curr_game.put()
 		elif curr_game.mission_num == 3:
-			curr_game.msn3 = "S"
+			curr_game.msn3 = u"\U00002705"
 			curr_game.put()
 		elif curr_game.mission_num == 4:
-			curr_game.msn4 = "S"
+			curr_game.msn4 = u"\U00002705"
 			curr_game.put()
 		elif curr_game.mission_num == 5:
-			curr_game.msn5 = "S"
+			curr_game.msn5 = u"\U00002705"
 			curr_game.put()
 	else:
 		if curr_game.mission_num == 1:
-			curr_game.msn1 = "F"
+			curr_game.msn1 = u"\U0000274C"
 			curr_game.put()
 		elif curr_game.mission_num == 2:
-			curr_game.msn2 = "F"
+			curr_game.msn2 = u"\U0000274C"
 			curr_game.put()
 		elif curr_game.mission_num == 3:
-			curr_game.msn3 = "F"
+			curr_game.msn3 = u"\U0000274C"
 			curr_game.put()
 		elif curr_game.mission_num == 4:
-			curr_game.msn4 = "F"
+			curr_game.msn4 = u"\U0000274C"
 			curr_game.put()
 		elif curr_game.mission_num == 5:
-			curr_game.msn5 = "F"
+			curr_game.msn5 = u"\U0000274C"
 			curr_game.put()
 
 
@@ -296,7 +296,6 @@ def game_summary(chat_id):
 	text += "Mission 4: " + curr_game.msn4 + "\n"
 	text += "Mission 5: " + curr_game.msn5 + "\n"
 	text += "Number of consequetive failures to proceed for this Mission: " + str(curr_game.conesequetive_fail_votes_num) + "\n \n"
-	text += "Where N stands for a Mission yet to be executed,\nS stands for a Mission that ended in Success and\nF stands for a Mission that ended in Failure."
 	return text
 
 def end_game_summary(chat_id):
