@@ -451,7 +451,9 @@ class WebhookHandler(webapp2.RequestHandler):
 								spoilers = spoilers[:-2]
 								announce("Your dear friend(s) " + spoilers + " did not activate me as I said, please do so by clicking on me -> @theresistancegamebot and pressing /start before trying to start the game again by entering /startgame")
 
-							else:   
+							else:
+								if num_players < 5:
+									announce("Warning, for demonstration purposes only. Game will be skewed and unfair.")   
 								curr_game.state = 'selection'
 								curr_game.put()
 								utils.assign_role(chat_id)
