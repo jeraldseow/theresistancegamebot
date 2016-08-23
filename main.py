@@ -245,7 +245,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
 			if curr_game:
 				if text == "/end" or text == "/end@theresistancegamebot":
-					memcache.set(str(chat_id), value = fr_user_id, time = 172800)
+					memcache.set(str(chat_id), value = fr_user_id, time = 30)
 					reply("Are you sure you really want to end this game? If you do, make sure the next message sent in this group is /really_end and that it is sent by " + fr_user_name + ". If I receive any other message by any other player, this process will be terminated.")
 					return
 				elif text == "/really_end" or text == "/really_end@theresistancegamebot":
@@ -264,17 +264,17 @@ class WebhookHandler(webapp2.RequestHandler):
 					memcache.delete(str(chat_id))
 					announce("End sequence interrupted, let the fun continue!")
 
-			elif date > curr_game.game_time + 172800:
+			if date > curr_game.game_time + 172800:
 				announce("This game has lasted way longer than it should have. Shutting down this instance of the game.")
 				for player in utils.get_curr_player_list(chat_id):
 					player.key.delete()
 				curr_game.key.delete()
-			elif date > curr_game.game_time + 120 and curr_game.state == 'player_addition':
+			if date > curr_game.game_time + 120 and curr_game.state == 'player_addition':
 				announce("Insufficient players to proceed, game shutting down now")
 				for player in utils.get_curr_player_list(chat_id):
 					player.key.delete()
 				curr_game.key.delete()
-			elif date > curr_game.game_time + 60 and curr_game.state == 'player_addition':
+			if date > curr_game.game_time + 60 and curr_game.state == 'player_addition':
 				announce(str(curr_game.game_time + 120 - date)+ " seconds left! Quick! Find more friends to join in on the fun!")
 
 
@@ -381,17 +381,21 @@ class WebhookHandler(webapp2.RequestHandler):
 							line = line[:-2]
 							reply(line)
 
-					elif (text == '/whoarewewaitingfor' or text == '/whoarewewaitingfor@theresistancegamebot') and (curr_game.state == 'voting' or curr_game.state == 'mission'):
-						new_list = utils.who_can_vote(chat_id)
-						if len(new_list) > 0:
-							out = "We're still waiting for "
-							for player in new_list:
-								out += player.name + ", "
-							out = out[:-2]
-							out += " to vote! Hurry them up!"
-							announce(out)
+					elif (text == '/whoarewewaitingfor' or text == '/whoarewewaitingfor@theresistancegamebot'):
+						if (curr_game.state == 'voting' or curr_game.state == 'mission'):
+							new_list = utils.who_can_vote(chat_id)
+							if len(new_list) > 0:
+								out = "We're still waiting for "
+								for player in new_list:
+									out += player.name + ", "
+								out = out[:-2]
+								out += " to vote! Hurry them up!"
+								announce(out)
+							else:
+								reply("We're not waiting for anyone, let's keep the game going!")
 						else:
-							announce("We're not waiting for anyone, let's keep the game going!")
+							leader = utils.game_leader(chat_id)
+							reply("We're waiting for " + leader.name + " to choose his/her team!")
 
 					elif text == "/state" or text == "/state@theresistancegamebot":
 						reply("Current game state: " + curr_game.state)
@@ -436,7 +440,7 @@ class WebhookHandler(webapp2.RequestHandler):
 								if getEnabled(player.get_id()) == False:
 									no_ready_list.append(player)
 
-							if num_players < 5:
+							if num_players < 1:
 								reply ('We need more players before we can start! Go get more friends to join the game!')
 								announce("We now have " + str(num_players) + " players, we need at least 5 players to start the game!")
 
