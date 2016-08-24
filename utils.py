@@ -4,8 +4,22 @@ import random
 import logging
 
 # ==============GLOBAL DICs==================
+
+emo1 = u"\U00000031\U0000FE0F\U000020E3"
+emo2 = u"\U00000032\U0000FE0F\U000020E3"
+emo3 = u"\U00000033\U0000FE0F\U000020E3"
+emo4 = u"\U00000034\U0000FE0F\U000020E3"
+emo5 = u"\U00000035\U0000FE0F\U000020E3"
+
+emoman = u"\U0001F464"
+
+emotick = u"\U00002705"
+emocross = u"\U0000274C"
+
 identityDictRS = {1:(1,0), 2:(1,1), 3:(2,1), 4:(3,1), 5:(3,2), 6:(4,2), 7:(4,3), 8:(5,3), 9:(6,3), 10:(6,4)}
 missionDict = {1:(0,1,1,1,1,1), 2:(0,2,2,2,2,2), 3:(0,2,2,2,2,3), 4:(0,2,2,2,3,3), 5:(0,2,3,2,3,3), 6:(0,2,3,3,3,4), 7:(0,2,3,3,4,4), 8:(0,3,4,4,5,5), 9:(0,3,4,4,5,5), 10:(0,3,3,4,4,5)}
+num_for_msn = {1:(0,emo1,emo1,emo1,emo1,emo1), 2:(0,emo2,emo2,emo2,emo2,emo2), 3:(0,emo2,emo2,emo2,emo2,emo3), 4:(0,emo2,emo2,emo2,emo3,emo3), 5:(0,emo2,emo3,emo2,emo3,emo3), 6:(0,emo2,emo3,emo3,emo3,emo4), 7:(0,emo2,emo3,emo3,emo4,emo4), 8:(0,emo3,emo4,emo4,emo5,emo5), 9:(0,emo3,emo4,emo4,emo5,emo5), 10:(0,emo3,emo3,emo4,emo4,emo5)}
+
 
 
 def get_curr_game(chat_id):
@@ -250,39 +264,49 @@ def who_can_vote(chat_id):
 			new_list.append(player)
 	return new_list
 
-def update_mission_summary(chat_id, mission_success):
+def update_mission_summary(chat_id, mission_success, num_succ):
 	curr_game = get_curr_game(chat_id)
 	if mission_success == True:
 		if curr_game.mission_num == 1:
-			curr_game.msn1 = u"\U00002705"
+			curr_game.msn1 = "Success"
+			curr_game.msn1numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 2:
-			curr_game.msn2 = u"\U00002705"
+			curr_game.msn2 = "Success"
+			curr_game.msn2numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 3:
-			curr_game.msn3 = u"\U00002705"
+			curr_game.msn3 = "Success"
+			curr_game.msn3numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 4:
-			curr_game.msn4 = u"\U00002705"
+			curr_game.msn4 = "Success"
+			curr_game.msn4numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 5:
-			curr_game.msn5 = u"\U00002705"
+			curr_game.msn5 = "Success"
+			curr_game.msn5numsucc = num_succ
 			curr_game.put()
 	else:
 		if curr_game.mission_num == 1:
-			curr_game.msn1 = u"\U0000274C"
+			curr_game.msn1 = "Failure"
+			curr_game.msn1numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 2:
-			curr_game.msn2 = u"\U0000274C"
+			curr_game.msn2 = "Failure"
+			curr_game.msn2numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 3:
-			curr_game.msn3 = u"\U0000274C"
+			curr_game.msn3 = "Failure"
+			curr_game.msn3numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 4:
-			curr_game.msn4 = u"\U0000274C"
+			curr_game.msn4 = "Failure"
+			curr_game.msn4numsucc = num_succ
 			curr_game.put()
 		elif curr_game.mission_num == 5:
-			curr_game.msn5 = u"\U0000274C"
+			curr_game.msn5 = "Failure"
+			curr_game.msn5numsucc = num_succ
 			curr_game.put()
 
 
@@ -290,22 +314,152 @@ def game_summary(chat_id):
 	"""Returns a string showing a summary of the current game"""
 	curr_game = get_curr_game(chat_id)
 	text = "Current Mission progress: \n \n"
-	text += "Mission 1: " + curr_game.msn1 + "\n"
-	text += "Mission 2: " + curr_game.msn2 + "\n"
-	text += "Mission 3: " + curr_game.msn3 + "\n"
-	text += "Mission 4: " + curr_game.msn4 + "\n"
-	text += "Mission 5: " + curr_game.msn5 + "\n"
-	text += "Number of consequetive failures to proceed for this Mission: " + str(curr_game.conesequetive_fail_votes_num) + "\n \n"
+	text += "Mission 1: " 
+	if curr_game.msn1 == "":
+		for i in range(missionDict[curr_game.num_player][1]):
+			text += emoman
+	else:
+		numfail1 = missionDict[curr_game.num_player][1] - curr_game.msn1numsucc
+		for i in range(curr_game.msn1numsucc):
+			text += emotick
+		for i in range(numfail1):
+			text += emocross
+		if curr_game.msn1 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 2: "
+	if curr_game.msn2 == "":
+		for i in range(missionDict[curr_game.num_player][2]):
+			text += emoman
+	else:
+		numfail2 = missionDict[curr_game.num_player][2] - curr_game.msn2numsucc
+		for i in range(curr_game.msn2numsucc):
+			text += emotick
+		for i in range(numfail2):
+			text += emocross
+		if curr_game.msn2 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 3: "
+	if curr_game.msn3 == "":
+		for i in range(missionDict[curr_game.num_player][3]):
+			text += emoman
+	else:
+		numfail3 = missionDict[curr_game.num_player][3] - curr_game.msn3numsucc
+		for i in range(curr_game.msn3numsucc):
+			text += emotick
+		for i in range(numfail3):
+			text += emocross
+		if curr_game.msn3 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 4: "
+	if curr_game.msn4 == "":
+		for i in range(missionDict[curr_game.num_player][4]):
+			text += emoman
+	else:
+		numfail4 = missionDict[curr_game.num_player][4] - curr_game.msn4numsucc
+		for i in range(curr_game.msn4numsucc):
+			text += emotick
+		for i in range(numfail4):
+			text += emocross
+		if curr_game.msn4 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 5: "
+	if curr_game.msn5 == "":
+		for i in range(missionDict[curr_game.num_player][5]):
+			text += emoman
+	else:
+		numfail5 = missionDict[curr_game.num_player][5] - curr_game.msn5numsucc
+		for i in range(curr_game.msn5numsucc):
+			text += emotick
+		for i in range(numfail5):
+			text += emocross
+		if curr_game.msn5 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\n\nConsecutive failures: " + str(curr_game.conesequetive_fail_votes_num) + "/5\n \n"
 	return text
 
 def end_game_summary(chat_id):
 	curr_game = get_curr_game(chat_id)
 	text = "The results of the Missions: \n \n"
-	text += "Mission 1: " + curr_game.msn1 + "\n"
-	text += "Mission 2: " + curr_game.msn2 + "\n"
-	text += "Mission 3: " + curr_game.msn3 + "\n"
-	text += "Mission 4: " + curr_game.msn4 + "\n"
-	text += "Mission 5: " + curr_game.msn5 + "\n \n"
+	text += "Mission 1: " 
+	if curr_game.msn1 == "":
+		for i in range(missionDict[curr_game.num_player][1]):
+			text += emoman
+	else:
+		numfail1 = missionDict[curr_game.num_player][1] - curr_game.msn1numsucc
+		for i in range(curr_game.msn1numsucc):
+			text += emotick
+		for i in range(numfail1):
+			text += emocross
+		if curr_game.msn1 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 2: "
+	if curr_game.msn2 == "":
+		for i in range(missionDict[curr_game.num_player][2]):
+			text += emoman
+	else:
+		numfail2 = missionDict[curr_game.num_player][2] - curr_game.msn2numsucc
+		for i in range(curr_game.msn2numsucc):
+			text += emotick
+		for i in range(numfail2):
+			text += emocross
+		if curr_game.msn2 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 3: "
+	if curr_game.msn3 == "":
+		for i in range(missionDict[curr_game.num_player][3]):
+			text += emoman
+	else:
+		numfail3 = missionDict[curr_game.num_player][3] - curr_game.msn3numsucc
+		for i in range(curr_game.msn3numsucc):
+			text += emotick
+		for i in range(numfail3):
+			text += emocross
+		if curr_game.msn3 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 4: "
+	if curr_game.msn4 == "":
+		for i in range(missionDict[curr_game.num_player][4]):
+			text += emoman
+	else:
+		numfail4 = missionDict[curr_game.num_player][4] - curr_game.msn4numsucc
+		for i in range(curr_game.msn4numsucc):
+			text += emotick
+		for i in range(numfail4):
+			text += emocross
+		if curr_game.msn4 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
+	text += "\nMission 5: "
+	if curr_game.msn5 == "":
+		for i in range(missionDict[curr_game.num_player][5]):
+			text += emoman
+	else:
+		numfail5 = missionDict[curr_game.num_player][5] - curr_game.msn5numsucc
+		for i in range(curr_game.msn5numsucc):
+			text += emotick
+		for i in range(numfail5):
+			text += emocross
+		if curr_game.msn5 == "Success":
+			text += " Outcome: Mission Success"
+		else:
+			text += " Outcome: Mission Failure"
 	return text
 
 @ndb.transactional
