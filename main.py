@@ -62,26 +62,22 @@ class SetWebhookHandler(webapp2.RequestHandler):
 class EndHandler(webapp2.RequestHandler):
 	def post(self):
 
-		chat_id = self.request.body
+		chat_id = int(self.request.body)
 
-		def announce(msg=None, img=None):
-			if msg:
-				resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
-					'chat_id': str(chat_id),
-					'text': str("This game has lasted wayyy too long, Game Terminated!"),
-					'disable_web_page_preview': 'true',
-				})).read()
-			else:
-				logging.error('no msg or img specified')
-				resp = None
-
-			logging.info('send response:')
-			logging.info(resp)
-
+		def announce():
+			
+			resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
+				'chat_id': str(chat_id),
+				'text': str("This game has lasted wayyy too long, Game Terminated!"),
+				'disable_web_page_preview': 'true',
+			})).read()
+			
 		for player in utils.get_curr_player_list(chat_id):
 			player.key.delete()
-		utils.get_curr_game(chat_id).key.delete()
-		memcache.delete(str(chat_id))
+		if utils.get_curr_game(chat_id):
+			utils.get_curr_game(chat_id).key.delete()
+			memcache.delete(str(chat_id))
+			announce()
 
 
 class WebhookHandler(webapp2.RequestHandler):
@@ -328,7 +324,7 @@ class WebhookHandler(webapp2.RequestHandler):
 				if curr_game == None:
 					if text == '/newgame' or text == "/newgame@theresistancegamebot":
 						if curr_player == None:
-							taskqueue.add(url='/end', payload=chat_id, countdown=172800)
+							taskqueue.add(url='/end', payload=str(chat_id), countdown=172800)
 							new_game = Game(id = str(chat_id), chat_title = chat_title, game_time = date)
 							new_game.put()
 							curr_game = utils.put_new_player(chat_id, fr_user_id, fr_user_name)
