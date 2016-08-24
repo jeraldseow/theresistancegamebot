@@ -285,6 +285,11 @@ class WebhookHandler(webapp2.RequestHandler):
 					memcache.delete(str(chat_id))
 					announce("End sequence interrupted, let the fun continue!")
 
+			if date > curr_game.game_time + 172800:
+				announce("This game has lasted wayyy too long, Game Terminated!")
+				for player in utils.get_curr_player_list(chat_id):
+					player.key.delete()
+				curr_game.key.delete()
 			if date > curr_game.game_time + 120 and curr_game.state == 'player_addition':
 				announce("Insufficient players to proceed, game shutting down now")
 				for player in utils.get_curr_player_list(chat_id):
@@ -325,7 +330,7 @@ class WebhookHandler(webapp2.RequestHandler):
 				if curr_game == None:
 					if text == '/newgame' or text == "/newgame@theresistancegamebot":
 						if curr_player == None:
-							taskqueue.add(url='/end', payload=str(chat_id), countdown=172800)
+							#taskqueue.add(url='/end', payload=str(chat_id), countdown=172800)
 							new_game = Game(id = str(chat_id), chat_title = chat_title, game_time = date)
 							new_game.put()
 							curr_game = utils.put_new_player(chat_id, fr_user_id, fr_user_name)
