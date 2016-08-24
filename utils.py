@@ -264,7 +264,6 @@ def who_can_vote(chat_id):
 			new_list.append(player)
 	return new_list
 
-@ndb.transactional
 def update_mission_summary(chat_id, mission_success, num_succ):
 	curr_game = get_curr_game(chat_id)
 	if mission_success == True:
