@@ -264,6 +264,7 @@ def who_can_vote(chat_id):
 			new_list.append(player)
 	return new_list
 
+@ndb.transactional
 def update_mission_summary(chat_id, mission_success, num_succ):
 	curr_game = get_curr_game(chat_id)
 	if mission_success == True:
@@ -325,9 +326,9 @@ def game_summary(chat_id):
 		for i in range(numfail1):
 			text += emocross
 		if curr_game.msn1 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 2: "
 	if curr_game.msn2 == "":
 		for i in range(missionDict[curr_game.num_player][2]):
@@ -339,9 +340,9 @@ def game_summary(chat_id):
 		for i in range(numfail2):
 			text += emocross
 		if curr_game.msn2 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 3: "
 	if curr_game.msn3 == "":
 		for i in range(missionDict[curr_game.num_player][3]):
@@ -353,9 +354,9 @@ def game_summary(chat_id):
 		for i in range(numfail3):
 			text += emocross
 		if curr_game.msn3 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 4: "
 	if curr_game.msn4 == "":
 		for i in range(missionDict[curr_game.num_player][4]):
@@ -367,9 +368,9 @@ def game_summary(chat_id):
 		for i in range(numfail4):
 			text += emocross
 		if curr_game.msn4 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 5: "
 	if curr_game.msn5 == "":
 		for i in range(missionDict[curr_game.num_player][5]):
@@ -381,10 +382,10 @@ def game_summary(chat_id):
 		for i in range(numfail5):
 			text += emocross
 		if curr_game.msn5 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
-	text += "\n\nConsecutive failures: " + str(curr_game.conesequetive_fail_votes_num) + "/5\n \n"
+			text += " Mission FAILURE"
+	text += "\n\nConsecutive nomination failures: " + str(curr_game.conesequetive_fail_votes_num) + "/5\n \n"
 	return text
 
 def end_game_summary(chat_id):
@@ -401,9 +402,9 @@ def end_game_summary(chat_id):
 		for i in range(numfail1):
 			text += emocross
 		if curr_game.msn1 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 2: "
 	if curr_game.msn2 == "":
 		for i in range(missionDict[curr_game.num_player][2]):
@@ -415,9 +416,9 @@ def end_game_summary(chat_id):
 		for i in range(numfail2):
 			text += emocross
 		if curr_game.msn2 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 3: "
 	if curr_game.msn3 == "":
 		for i in range(missionDict[curr_game.num_player][3]):
@@ -429,9 +430,9 @@ def end_game_summary(chat_id):
 		for i in range(numfail3):
 			text += emocross
 		if curr_game.msn3 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 4: "
 	if curr_game.msn4 == "":
 		for i in range(missionDict[curr_game.num_player][4]):
@@ -443,9 +444,9 @@ def end_game_summary(chat_id):
 		for i in range(numfail4):
 			text += emocross
 		if curr_game.msn4 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	text += "\nMission 5: "
 	if curr_game.msn5 == "":
 		for i in range(missionDict[curr_game.num_player][5]):
@@ -457,9 +458,9 @@ def end_game_summary(chat_id):
 		for i in range(numfail5):
 			text += emocross
 		if curr_game.msn5 == "Success":
-			text += " Outcome: Mission Success"
+			text += " Mission SUCCESS"
 		else:
-			text += " Outcome: Mission Failure"
+			text += " Mission FAILURE"
 	return text
 
 @ndb.transactional

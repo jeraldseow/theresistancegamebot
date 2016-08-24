@@ -250,10 +250,10 @@ class WebhookHandler(webapp2.RequestHandler):
 				line += spy_name
 				line += ', '
 			line = line[:-2]
-			line += "\n \n"
+			line += "\n\n"
 			text = utils.end_game_summary(chat_id)
 			line += text
-			line += "\n Thanks for playing, see you next time!"
+			line += "\nThanks for playing, see you next time!"
 			reply_to_user(chat_id, line)
 			for player in utils.get_curr_player_list(chat_id):
 				player.key.delete()
@@ -471,7 +471,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
 							else:
 								if num_players < 5:
-									announce("Warning, for demonstration purposes only. Game will be skewed and unfair.")
+									announce("Warning, starting the game with an insufficient number of players for demonstration purposes only. Game will be skewed and unfair.")
 								curr_game.state = 'selection'
 								curr_game.put()
 								utils.assign_role(chat_id)
@@ -617,7 +617,7 @@ class WebhookHandler(webapp2.RequestHandler):
 											reply_to_user(curr_game.get_id(), "Spies do take note: you require TWO Fail votes for this Mission to fail.")
 
 									else:
-										reply_to_user(member.parent_chat_id, "Insufficient Yes votes to proceed, the spies have caused sufficient chaos to confuse the resistance")
+										reply_to_user(member.parent_chat_id, "Insufficient Yes votes to proceed, the spies have caused sufficient chaos to confuse the resistance!")
 										curr_game.winner = 'Spies'
 										curr_game.put()
 										end_game(member.parent_chat_id)
@@ -640,7 +640,7 @@ class WebhookHandler(webapp2.RequestHandler):
 										curr_game = utils.increment_game_fail(curr_player.parent_chat_id)
 										reply(u"You crook, why would you want the Mission to fail?! \U0001F31A")
 									else:
-										reply("You're not allowed to sabotage the Mission as the member of the resistance! Send me your vote again!")
+										reply("You're not allowed to sabotage the Mission as a member of the Resistance! Send me your vote again!")
 										keyboard_s(curr_player.get_id(), "As a member of the Resistance, you are only allowed to vote /success to the outcome of this Mission.")
 							else:
 								reply("You have already cast your vote for this Mission!")
@@ -649,8 +649,10 @@ class WebhookHandler(webapp2.RequestHandler):
 
 						if curr_game.succ_count + curr_game.fail_count == len(utils.get_mission_namelist(curr_game.get_id())):
 							if (curr_game.fail_count == 0) or (curr_game.num_player >6 and curr_game.fail_count <= 1 and curr_game.mission_num == 4):
-								line = "Mission " + str(curr_game.mission_num) + " has been successful! There were " + str(curr_game.succ_count) + " success votes and " + str(curr_game.fail_count) + " fail votes!"
+								line = "Mission " + str(curr_game.mission_num) + " has been successful!\n\n"
 								utils.update_mission_summary(curr_game.get_id(), True, curr_game.succ_count)
+								line += utils.game_summary(curr_player.parent_chat_id)
+
 								reply_to_user(curr_game.get_id(), line)
 								curr_game.mission_succ_count += 1
 								curr_game.mission_num += 1
@@ -674,8 +676,10 @@ class WebhookHandler(webapp2.RequestHandler):
 										reply_to_user(curr_game.get_id(), "Spies do take note: you require TWO Fail votes for this Mission to fail.")
 
 							else:
-								line = "Mission " + str(curr_game.mission_num) + " has ended in failure! There were " + str(curr_game.succ_count) + " success votes and " + str(curr_game.fail_count) + " fail votes!"
+								line = "Mission " + str(curr_game.mission_num) + " has ended in failure!\n\n"
 								utils.update_mission_summary(curr_game.get_id(), False, curr_game.succ_count)
+								line += utils.game_summary(curr_player.parent_chat_id)
+
 								reply_to_user(curr_game.get_id(), line)
 								curr_game.mission_fail_count += 1
 								curr_game.mission_num += 1
@@ -702,7 +706,7 @@ class WebhookHandler(webapp2.RequestHandler):
 						reply("save me I'm not supposed to be hereeee...")
 
 				else:
-					announce('Get into a game with a group of friends by typing /newgame on your group chat!')
+					announce('Get into a game with a group of friends by typing /newgame on your group chat and adding me into it as well!')
 
 
 app = webapp2.WSGIApplication([
