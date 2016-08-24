@@ -62,27 +62,25 @@ class SetWebhookHandler(webapp2.RequestHandler):
 class EndHandler(webapp2.RequestHandler):
 	def post(self):
 
-		chat_id = self.request.body
+		chat_id = int(self.request.body)
 
-		def announce(msg=None, img=None):
-			if msg:
-				resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
-					'chat_id': str(chat_id),
-					'text': str("Game Terminated"),
-					'disable_web_page_preview': 'true',
-				})).read()
-			else:
-				logging.error('no msg or img specified')
-				resp = None
+		def announce():
+			resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
+				'chat_id': str(chat_id),
+				'text': str("Game Terminated"),
+				'disable_web_page_preview': 'true',
+			})).read()
 
 			logging.info('send response:')
 			logging.info(resp)
 
 		for player in utils.get_curr_player_list(chat_id):
 			player.key.delete()
-		utils.get_curr_game(chat_id).key.delete()
-		memcache.delete(str(chat_id))
-
+		curr_game = utils.get_curr_game(chat_id)
+		if curr_game:
+			curr_game.key.delete()
+			memcache.delete(str(chat_id))
+			announce()
 
 class WebhookHandler(webapp2.RequestHandler):
 	def post(self):
@@ -289,7 +287,7 @@ class WebhookHandler(webapp2.RequestHandler):
 					memcache.delete(str(chat_id))
 					announce("End sequence interrupted, let the fun continue!")
 
-			taskqueue.add(url='/end', payload=chat_id, countdown=15)
+			taskqueue.add(url='/end', payload=str(chat_id), countdown=172800)
 
 			if date > curr_game.game_time + 172800:
 				announce("This game has lasted way longer than it should have. Shutting down this instance of the game.")
